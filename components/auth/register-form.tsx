@@ -39,7 +39,6 @@ export const RegisterForm = () => {
     setSuccess('');
     startTransition(async () => {
       const data = await register(values);
-      console.log(data);
       setError(data.error || '');
       setSuccess(data.success || '');
     });
