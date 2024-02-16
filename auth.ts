@@ -51,6 +51,20 @@ export const {
     //   }
     //   return false;
     // },
+    async signIn({ user, account }) {
+      // allow OAuth withoud email varification
+      if (account?.provider !== 'credentials') return true;
+      if (user.id) {
+        const existingUser = await getUserById(user.id);
+
+        //prevent signin without email verification
+        if (!existingUser?.emailVerified) return false;
+
+        // Add 2fa check
+      }
+
+      return true;
+    },
     async jwt({ token }) {
       if (token.sub) {
         const user = await getUserById(token.sub);
