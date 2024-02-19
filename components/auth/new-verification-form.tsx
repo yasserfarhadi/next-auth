@@ -33,7 +33,8 @@ const NewVerificationForm = () => {
     let ignore = false;
 
     async function startSubmit() {
-      await new Promise((r) => setTimeout(r));
+      process.env.NODE_ENV === 'development' &&
+        (await new Promise((r) => setTimeout(r)));
       if (!ignore) {
         onSubmit();
       }
