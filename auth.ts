@@ -4,6 +4,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './lib/db';
 import { getUserById } from './data/user';
 import 'next-auth/jwt';
+import { getTwoFactorConfirmationByUserId } from './data/two-factor-confirmation';
 
 const roles = ['ADMIN', 'USER'] as const;
 type Roles = (typeof roles)[number];
@@ -60,7 +61,20 @@ export const {
         //prevent signin without email verification
         if (!existingUser?.emailVerified) return false;
 
-        // Add 2fa check
+        if (existingUser.isTwoFactorEnabled) {
+          const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+            existingUser.id
+          );
+
+          console.log({ twoFactorConfirmation });
+
+          if (!twoFactorConfirmation) return false;
+
+          // Delete two factor confirmation for next sign in
+          await db.twoFactorConfirmation.delete({
+            where: { id: twoFactorConfirmation.id },
+          });
+        }
       }
 
       return true;
