@@ -12,6 +12,7 @@ declare module 'next-auth' {
   interface User {
     /** The user's role. */
     role?: Roles;
+    isTwoFactorEnabled?: boolean;
   }
 }
 
@@ -19,6 +20,7 @@ declare module 'next-auth/jwt' {
   /** Returned by the `jwt` callback and `auth`, when using JWT sessions */
   interface JWT {
     role?: Roles;
+    isTwoFactorEnabled: boolean;
   }
 }
 
@@ -66,8 +68,6 @@ export const {
             existingUser.id
           );
 
-          console.log({ twoFactorConfirmation });
-
           if (!twoFactorConfirmation) return false;
 
           // Delete two factor confirmation for next sign in
@@ -82,7 +82,10 @@ export const {
     async jwt({ token }) {
       if (token.sub) {
         const user = await getUserById(token.sub);
-        if (user) token.role = user.role;
+        if (user) {
+          token.role = user.role;
+          token.isTwoFactorEnabled = user.isTwoFactorEnabled;
+        }
       }
       return token;
     },
@@ -94,6 +97,9 @@ export const {
         if (roles.includes(token.role)) {
           session.user.role = token.role;
         }
+      }
+      if (session.user) {
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
       }
       return session;
     },
